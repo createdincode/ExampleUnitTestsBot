@@ -2,7 +2,10 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Autofac;
+using ExampleUnitTestsBot.Dialogs;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Connector;
 
 namespace ExampleUnitTestsBot
@@ -18,7 +21,10 @@ namespace ExampleUnitTestsBot
         {
             if (activity.Type == ActivityTypes.Message)
             {
-                await Conversation.SendAsync(activity, () => new Dialogs.RootDialog());
+                using (var scope = DialogModule.BeginLifetimeScope(Conversation.Container, activity))
+                {
+                    await Conversation.SendAsync(activity, () => scope.Resolve<RootDialog>());
+                }
             }
             else
             {
